@@ -1,33 +1,20 @@
-import streamlit as st
-from openai import OpenAI
-from dotenv import load_dotenv
 import os
+from groq import Groq
+from dotenv import load_dotenv
+import streamlit as st
 
-load_dotenv()  
-api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=api_key)
+load_dotenv()
 
-st.set_page_config(page_title="Shruti's AI Chatbot", page_icon="🤖")
-st.title("💬 Shruti's Gen AI Chatbot")
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+st.title("💬 Groq Chatbot")
 
-user_input = st.text_input("You: ", "")
+user_input = st.text_input("Ask me anything:")
 
-if st.button("Send") and user_input.strip() != "":
-    st.session_state.chat_history.append({"role": "user", "content": user_input})
-
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=st.session_state.chat_history
-    )
-
-    bot_reply = response.choices[0].message.content
-    st.session_state.chat_history.append({"role": "assistant", "content": bot_reply})
-
-for chat in st.session_state.chat_history:
-    if chat["role"] == "user":
-        st.markdown(f"**You:** {chat['content']}")
-    else:
-        st.markdown(f"**Bot:** {chat['content']}")
+if st.button("Send"):
+    if user_input:
+        response = client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[{"role": "user", "content": user_input}]
+        )
+        st.write(response.choices[0].message.content)
